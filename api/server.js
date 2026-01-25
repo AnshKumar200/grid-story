@@ -20,16 +20,7 @@ const PIXEL_COOLDOWN_MS = 5000;
 })();
 
 const app = express();
-
-const isLocal = false;
-const corsOptions = {
-    origin:  (isLocal ? "http://localhost:5173" : 'https://grid-story.vercel.app'),
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
-    optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.get("/health", async (_, res) => {
     res.status(200)
