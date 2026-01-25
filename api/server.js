@@ -28,7 +28,7 @@ app.get("/health", async (_, res) => {
 
 app.get("/health/db", async (_, res) => {
     try {
-        const res = await database`select now()`;
+        const result = await database`select now()`;
         res.status(200).json("UP")
     } catch (err) {
         res.status(500).json("DOWN")
