@@ -23,15 +23,15 @@ const app = express();
 app.use(cors());
 
 app.get("/health", async (_, res) => {
-    res.status(200)
+    res.status(200).json("UP");
 })
 
 app.get("/health/db", async (_, res) => {
     try {
         const res = await database`select now()`;
-        res.status(200)
+        res.status(200).json("UP")
     } catch (err) {
-        res.status(500)
+        res.status(500).json("DOWN")
     }
 })
 
