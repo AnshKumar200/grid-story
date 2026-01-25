@@ -80,8 +80,24 @@ const TimelapseViewer = ({ appView, setAppView, getButtonStyle }) => {
     const { zoom, offset } = newView;
     const screenW = window.innerWidth;
     const screenH = window.innerHeight;
-    const clampedX = Math.min(0, Math.max(screenW - CANVAS_WIDTH * zoom, offset.x));
-    const clampedY = Math.min(0, Math.max(screenH - CANVAS_HEIGHT * zoom, offset.y));
+
+    const canvasScreenWidth = CANVAS_WIDTH * zoom;
+    const canvasScreenHeight = CANVAS_HEIGHT * zoom;
+
+    let clampedX, clampedY;
+
+    if (canvasScreenWidth < screenW) {
+      clampedX = (screenW - canvasScreenWidth) / 2;
+    } else {
+      clampedX = Math.min(0, Math.max(screenW - canvasScreenWidth, offset.x));
+    }
+
+    if (canvasScreenHeight < screenH) {
+      clampedY = (screenH - canvasScreenHeight) / 2;
+    } else {
+      clampedY = Math.min(0, Math.max(screenH - canvasScreenHeight, offset.y));
+    }
+
     return { zoom, offset: { x: clampedX, y: clampedY } };
   }, []);
 

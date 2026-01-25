@@ -1,8 +1,9 @@
 export const CANVAS_WIDTH = 200;
 export const CANVAS_HEIGHT = 200;
 export const PIXEL_SIZE = 2;
-export const API_URL = 'https://grid-story.onrender.com'
-export const WS_URL = 'wss://grid-story.onrender.com'
+const isLocal = true;
+export const API_URL = (isLocal ? "http://localhost:7878" : 'https://grid-story.onrender.com')
+export const WS_URL = (isLocal ? "ws://localhost:7878" : 'wss://grid-story.onrender.com')
 
 export const COLOR_PALETTE = [
   '#FFFFFF', // White

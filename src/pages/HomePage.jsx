@@ -6,9 +6,9 @@ const HomePage = () => {
   return (
     <div className='min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-50'>
       <div className='flex flex-col items-center z-[999] gap-10'>
-        <div className='text-6xl md:text-8xl lg:text-9xl z-10 font-medium'>Grid Story</div>
-        <div className='text-4xl'>A Million Pixels. One Shared Story.</div>
-        <div className='text-4xl w-200 text-center'>Join over a thousand simultaneous users on a massive, real-time collaborative canvas.</div>
+        <div className='text-5xl md:text-6xl lg:text-8xl z-10 font-medium'>Grid Story</div>
+        <div className='text-2xl lg:text-4xl text-center'>A Million Pixels. One Shared Story.</div>
+        <div className='text-2xl text-center text-wrap mx-10'>Join over a thousand simultaneous users on a massive, real-time collaborative canvas.</div>
         <Link to="/canvas" className='px-10 py-5 bg-black text-white rounded-4xl flex gap-5 border-2 items-center hover:bg-white transform-all duration-400 ease-in-out hover:text-black hover:border-2'>
           <div>Go To The Canvas!</div>
           <ArrowUpRight size={30}/>

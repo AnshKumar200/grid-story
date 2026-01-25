@@ -21,16 +21,30 @@ const PIXEL_COOLDOWN_MS = 5000;
 
 const app = express();
 
+const isLocal = true;
 const corsOptions = {
-    origin: 'https://grid-story.vercel.app',
+    origin:  (isLocal ? "http://localhost:5173" : 'https://grid-story.vercel.app'),
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'], 
+    allowedHeaders: ['Content-Type'],
     optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 
-app.get('/api/canvas', async (req, res) => {
+app.get("/health", async (_, res) => {
+    res.status(200)
+})
+
+app.get("/health/db", async (_, res) => {
+    try {
+        const res = await database`select now()`;
+        res.status(200)
+    } catch (err) {
+        res.status(500)
+    }
+})
+
+app.get('/api/canvas', async (_, res) => {
     try {
         const result = await database`select x, y, color from pixels`;
         res.json(result);
@@ -50,6 +64,33 @@ app.get('/api/timelapse', async (req, res) => {
     }
 });
 
+app.post('/api/setup/create-tables', async (req, res) => {
+    try {
+        await database`
+            drop table pixels;
+        `;
+
+        await database`
+            CREATE TABLE IF NOT EXISTS pixels (
+                x INT NOT NULL,
+                y INT NOT NULL,
+                color VARCHAR(7) NOT NULL DEFAULT '#FFFFFF',
+                user_id TEXT,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                PRIMARY KEY (x, y)
+            );
+        `;
+        
+        await database`
+            CREATE INDEX IF NOT EXISTS idx_pixels_created_at ON pixels (created_at ASC);
+        `;
+        
+        res.status(200).json({ message: 'Tables created successfully (if they did not exist).' });
+    } catch (err) {
+        console.error('Error creating tables:', err);
+        res.status(500).json({ error: 'Failed to create tables.' });
+    }
+});
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
