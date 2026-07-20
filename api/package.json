@@ -18,5 +18,11 @@
         "http": "^0.0.1-security",
         "postgres": "^3.4.9",
         "ws": "^8.21.0"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/dotenv": "^6.1.1",
+        "@types/express": "^5.0.6",
+        "@types/ws": "^8.18.1"
     }
 }

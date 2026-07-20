@@ -1,14 +1,20 @@
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const { WebSocketServer } = require('ws');
-const postgres = require('postgres');
-const cors = require('cors');
+import dotenv from "dotenv";
+dotenv.config();
+
+import express, { Request, Response } from "express";
+import http from "http";
+import { WebSocketServer, WebSocket, RawData } from "ws";
+import postgres from "postgres";
+import cors from "cors";
 
 const PORT = process.env.PORT || 7878;
-const database = postgres(process.env.DATABASE_URL);
+const database = postgres(process.env.DATABASE_URL || "");
 
 const PIXEL_COOLDOWN_MS = 5000;
+
+interface PixelWebSocket extends WebSocket {
+    lastPixelPlacement: number;
+}
 
 (async () => {
     try {
@@ -22,7 +28,7 @@ const PIXEL_COOLDOWN_MS = 5000;
 const app = express();
 app.use(cors());
 
-app.get("/health", async (_, res) => {
+app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json("UP");
 })
 
@@ -86,20 +92,20 @@ app.post('/api/setup/create-tables', async (req, res) => {
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-wss.broadcast = function broadcast(data) {
+function broadcast(data: string) {
     wss.clients.forEach(function each(client) {
         if (client.readyState === 1) {
             client.send(data);
         }
     });
-};
+}
 
-wss.on('connection', ws => {
+wss.on('connection', (ws: PixelWebSocket) => {
     ws.lastPixelPlacement = 0;
 
     ws.on('message', async (message) => {
         try {
-            const data = JSON.parse(message);
+            const data = JSON.parse(message.toString());
 
             if (data.type === 'placePixel' && data.payload) {
 
@@ -139,7 +145,7 @@ wss.on('connection', ws => {
                     type: 'updatePixel',
                     payload: { x, y, color }
                 };
-                wss.broadcast(JSON.stringify(broadcastPayload));
+                broadcast(JSON.stringify(broadcastPayload));
             }
         } catch (err) {
             console.error('failed to process the message:', err);
