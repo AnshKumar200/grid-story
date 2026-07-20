@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+:root {
+    --background: #ffffff;
+    --foreground: #171717;
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --animate-block-tb: block-tb 25s linear infinite;
+    --animate-block-bt: block-bt 25s linear infinite;
+    --animate-block-rl: block-rl 25s linear infinite;
+    --animate-block-lr: block-lr 25s linear infinite;
+
+    --animate-trail-tb: trail-tb 25s linear infinite;
+    --animate-trail-bt: trail-bt 25s linear infinite;
+    --animate-trail-rl: trail-rl 25s linear infinite;
+    --animate-trail-lr: trail-lr 25s linear infinite;
+
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
+}
+
+body {
+    /*    background: var(--background);
+    color: var(--foreground);
+*/
+}
+
+@keyframes block-tb {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(100vh)
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes block-bt {
+    0% {
+        transform: translateY(100vh);
+    }
+
+    50% {
+        transform: translateY(0)
+    }
+
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+@keyframes block-rl {
+    0% {
+        transform: translateX(100vw);
+    }
+
+    50% {
+        transform: translateX(0)
+    }
+
+    100% {
+        transform: translateX(100vw);
+    }
+}
+
+@keyframes block-lr {
+    0% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(100vw);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes trail-tb {
+    0% {
+        clip-path: inset(0 0 100% 0);
+    }
+
+    50% {
+        clip-path: inset(0 0 0 0);
+    }
+
+    100% {
+        clip-path: inset(0 0 100% 0);
+    }
+}
+
+@keyframes trail-bt {
+    0% {
+        clip-path: inset(100% 0 0 0);
+    }
+
+    50% {
+        clip-path: inset(0 0 0 0);
+    }
+
+    100% {
+        clip-path: inset(100% 0 0 0);
+    }
+}
+
+@keyframes trail-rl {
+    0% {
+        clip-path: inset(0 0 0 100%);
+    }
+
+    50% {
+        clip-path: inset(0 0 0 0);
+    }
+
+    100% {
+        clip-path: inset(0 0 0 100%);
+    }
+}
+
+@keyframes trail-lr {
+    0% {
+        clip-path: inset(0 100% 0 0);
+    }
+
+    50% {
+        clip-path: inset(0 0 0 0);
+    }
+
+    100% {
+        clip-path: inset(0 100% 0 0);
+    }
+}
