@@ -63,9 +63,8 @@ app.get('/api/timelapse', async (req, res) => {
 
 app.post('/api/setup/create-tables', async (req, res) => {
     try {
-        await database`
-            drop table pixels;
-        `;
+        //        await database`
+        //            drop table pixels;`;
 
         await database`
             CREATE TABLE IF NOT EXISTS pixels (
@@ -81,6 +80,16 @@ app.post('/api/setup/create-tables', async (req, res) => {
         await database`
             CREATE INDEX IF NOT EXISTS idx_pixels_created_at ON pixels (created_at ASC);
         `;
+
+        await database`
+            INSERT INTO pixels (x, y, color)
+            SELECT
+                x,
+                y,
+                '#FFFFFF'
+            FROM generate_series(0, 999) AS x
+            CROSS JOIN generate_series(0, 999) AS y;
+       `;
 
         res.status(200).json({ message: 'Tables created successfully (if they did not exist).' });
     } catch (err) {
@@ -133,6 +142,7 @@ wss.on('connection', (ws: PixelWebSocket) => {
                     SET color = ${color}, user_id = ${userId || 'anonymous'}, created_at = NOW()
                     WHERE x = ${x} AND y = ${y};
                 `;
+                console.log("===pixel updated===");
 
                 ws.lastPixelPlacement = Date.now();
 

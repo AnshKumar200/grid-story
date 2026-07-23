@@ -6,8 +6,30 @@ import CanvasLoader from './CanvasLoader';
 import ColorPalette from './ColorPalette';
 import Minimap from './Minimap';
 
-const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
-    const canvasRef = useRef(null);
+type Props = {
+    appView: string,
+    setAppView: (view: string) => void,
+    getButtonStyle: (color: string) => string,
+}
+
+type PixelItem = {
+    x: number,
+    y: number,
+    color: string,
+    user_id: string,
+    created_at: Date
+}
+
+export type View = {
+    zoom: number,
+    offset: {
+        x: number,
+        y: number,
+    }
+}
+
+const LiveCanvas = ({ appView, setAppView, getButtonStyle }: Props) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const { lastMessage, sendMessage } = useWebSocket(WS_URL);
 
     const [mode, setMode] = useState('view');
@@ -16,23 +38,24 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
     const [cooldownMs, setCooldownMs] = useState(0);
 
     const [isInitialized, setInitialized] = useState(false);
-    const [view, setView] = useState({ zoom: 1, offset: { x: 0, y: 0 } });
+    const [view, setView] = useState<View>({ zoom: 1, offset: { x: 0, y: 0 } });
     const [isPanning, setIsPanning] = useState(false);
     const lastPanPoint = useRef({ x: 0, y: 0 });
     const panOccurred = useRef(false);
 
-    const drawPixel = useCallback((ctx, x, y, color) => {
+    const drawPixel = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, color: string) => {
         ctx.fillStyle = color;
         ctx.fillRect(x, y, 1, 1);
     }, []);
 
     useEffect(() => {
-        const ctx = canvasRef.current.getContext('2d');
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx) return;
         fetch(`${API_URL}/api/canvas`)
             .then(res => res.json())
             .then(data => {
                 ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-                data.forEach(pixel => drawPixel(ctx, pixel.x, pixel.y, pixel.color));
+                data.forEach((pixel: PixelItem) => drawPixel(ctx, pixel.x, pixel.y, pixel.color));
                 setInitialized(true);
             });
     }, [drawPixel]);
@@ -42,7 +65,8 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
             try {
                 const { type, payload } = JSON.parse(lastMessage);
                 if (type === 'updatePixel') {
-                    const ctx = canvasRef.current.getContext('2d');
+                    const ctx = canvasRef.current?.getContext('2d');
+                    if (!ctx) return;
                     drawPixel(ctx, payload.x, payload.y, payload.color);
                 } else if (type === 'startCooldown') {
                     setCooldownMs(payload.duration);
@@ -79,7 +103,7 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
         return () => window.removeEventListener('resize', calculateAndSetView);
     }, [calculateAndSetView]);
 
-    const getClampedView = useCallback((newView) => {
+    const getClampedView = useCallback((newView: View) => {
         const { zoom, offset } = newView;
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
@@ -104,7 +128,7 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
         return { zoom, offset: { x: clampedX, y: clampedY } };
     }, []);
 
-    const handleMouseDown = (e) => {
+    const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         panOccurred.current = false;
         if (mode === 'view') {
             setIsPanning(true);
@@ -112,7 +136,7 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
         }
     };
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (!isPanning || mode !== 'view') return;
         panOccurred.current = true;
         const dx = e.clientX - lastPanPoint.current.x;
@@ -124,9 +148,10 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
         lastPanPoint.current = { x: e.clientX, y: e.clientY };
     };
 
-    const handleMouseUp = (e) => {
+    const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (mode === 'place' && !panOccurred.current && cooldownMs <= 0) {
-            const rect = canvasRef.current.getBoundingClientRect();
+            const rect = canvasRef.current?.getBoundingClientRect();
+            if (!rect) return;
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
 
@@ -140,7 +165,7 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
         setIsPanning(false);
     };
 
-    const handleColorSelect = (color) => {
+    const handleColorSelect = (color: string) => {
         setSelectedColor(color);
         setPaletteVisible(false);
     }
@@ -251,7 +276,6 @@ const LiveCanvas = ({ appView, setAppView, getButtonStyle }) => {
                 </div>
 
                 <Minimap mainCanvasRef={canvasRef} view={view} />
-
             </div>
 
         </div>

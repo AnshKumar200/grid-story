@@ -103,7 +103,7 @@ export default function GridEffect({ blink }: { blink: boolean }) {
 
         animate();
 
-        let interval: number | null = null;
+        let interval: ReturnType<typeof setInterval>;
         if (blink) {
             interval = setInterval(activateRandomCells, colorChangeInterval);
         }

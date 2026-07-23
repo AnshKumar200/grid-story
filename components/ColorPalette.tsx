@@ -1,7 +1,6 @@
-import React from 'react';
 import { COLOR_PALETTE } from '../constants/config';
 
-const ColorPalette = ({ isVisible, onColorSelect, onClose }) => {
+const ColorPalette = ({ isVisible, onColorSelect, onClose }: { isVisible: boolean, onColorSelect: (color: string) => void, onClose: () => void }) => {
     if (!isVisible) return null;
 
     return (

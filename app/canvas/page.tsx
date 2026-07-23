@@ -6,7 +6,7 @@ import { useState } from "react"
 export default function CanvasPage() {
     const [view, setView] = useState('canvas')
 
-    const getButtonStyle = (buttonView) => {
+    const getButtonStyle = (buttonView: string) => {
         const baseStyle = "px-5 py-2 text-md font-semibold rounded-md transition-all duration-200 ease-in-out";
         if (view === buttonView) {
             return `${baseStyle} bg-black text-white shadow-md`;
@@ -23,7 +23,8 @@ export default function CanvasPage() {
                     getButtonStyle={getButtonStyle}
                 />
             ) : (
-                <TimelapseViewer
+            // TODO: Timelapse
+                <LiveCanvas
                     appView={view}
                     setAppView={setView}
                     getButtonStyle={getButtonStyle}
