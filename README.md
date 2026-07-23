@@ -9,8 +9,8 @@ Follow these instructions to set up and run the project locally.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/AnshKumar200/Grid-Story.git
-cd Grid-Story
+git clone https://github.com/AnshKumar200/grid-story.git
+cd grid-story
 ```
 
 ### 2. Run Frontend
@@ -35,5 +35,5 @@ DATABASE_URL=
 After that, run the backend server.
 ```bash
 npm install
-node server.js
+npm run dev
 ```

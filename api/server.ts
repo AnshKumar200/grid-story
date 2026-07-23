@@ -1,14 +1,20 @@
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const { WebSocketServer } = require('ws');
-const postgres = require('postgres');
-const cors = require('cors');
+import dotenv from "dotenv";
+dotenv.config();
+
+import express, { Request, Response } from "express";
+import http from "http";
+import { WebSocketServer, WebSocket, RawData } from "ws";
+import postgres from "postgres";
+import cors from "cors";
 
 const PORT = process.env.PORT || 7878;
-const database = postgres(process.env.DATABASE_URL);
+const database = postgres(process.env.DATABASE_URL || "");
 
 const PIXEL_COOLDOWN_MS = 5000;
+
+interface PixelWebSocket extends WebSocket {
+    lastPixelPlacement: number;
+}
 
 (async () => {
     try {
@@ -22,7 +28,7 @@ const PIXEL_COOLDOWN_MS = 5000;
 const app = express();
 app.use(cors());
 
-app.get("/health", async (_, res) => {
+app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json("UP");
 })
 
@@ -47,7 +53,7 @@ app.get('/api/canvas', async (_, res) => {
 
 app.get('/api/timelapse', async (req, res) => {
     try {
-        const result = await database `select x, y, color, created_at from pixels order by created_at asc`;
+        const result = await database`select x, y, color, created_at from pixels order by created_at asc`;
         res.json(result);
     } catch (err) {
         console.error('error fetching timelapse data:', err);
@@ -57,9 +63,8 @@ app.get('/api/timelapse', async (req, res) => {
 
 app.post('/api/setup/create-tables', async (req, res) => {
     try {
-        await database`
-            drop table pixels;
-        `;
+        //        await database`
+        //            drop table pixels;`;
 
         await database`
             CREATE TABLE IF NOT EXISTS pixels (
@@ -71,11 +76,21 @@ app.post('/api/setup/create-tables', async (req, res) => {
                 PRIMARY KEY (x, y)
             );
         `;
-        
+
         await database`
             CREATE INDEX IF NOT EXISTS idx_pixels_created_at ON pixels (created_at ASC);
         `;
-        
+
+        await database`
+            INSERT INTO pixels (x, y, color)
+            SELECT
+                x,
+                y,
+                '#FFFFFF'
+            FROM generate_series(0, 999) AS x
+            CROSS JOIN generate_series(0, 999) AS y;
+       `;
+
         res.status(200).json({ message: 'Tables created successfully (if they did not exist).' });
     } catch (err) {
         console.error('Error creating tables:', err);
@@ -86,24 +101,23 @@ app.post('/api/setup/create-tables', async (req, res) => {
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-wss.broadcast = function broadcast(data) {
+function broadcast(data: string) {
     wss.clients.forEach(function each(client) {
         if (client.readyState === 1) {
             client.send(data);
         }
     });
-};
+}
 
-wss.on('connection', ws => {
-    console.log('client connected');
+wss.on('connection', (ws: PixelWebSocket) => {
     ws.lastPixelPlacement = 0;
 
     ws.on('message', async (message) => {
         try {
-            const data = JSON.parse(message);
+            const data = JSON.parse(message.toString());
 
             if (data.type === 'placePixel' && data.payload) {
-                
+
                 const lastPlacement = ws.lastPixelPlacement || 0;
                 const now = Date.now();
                 const diff = now - lastPlacement;
@@ -128,6 +142,7 @@ wss.on('connection', ws => {
                     SET color = ${color}, user_id = ${userId || 'anonymous'}, created_at = NOW()
                     WHERE x = ${x} AND y = ${y};
                 `;
+                console.log("===pixel updated===");
 
                 ws.lastPixelPlacement = Date.now();
 
@@ -140,7 +155,7 @@ wss.on('connection', ws => {
                     type: 'updatePixel',
                     payload: { x, y, color }
                 };
-                wss.broadcast(JSON.stringify(broadcastPayload));
+                broadcast(JSON.stringify(broadcastPayload));
             }
         } catch (err) {
             console.error('failed to process the message:', err);
