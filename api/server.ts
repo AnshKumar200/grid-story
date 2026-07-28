@@ -29,10 +29,6 @@ const app = express();
 app.use(cors());
 
 app.get("/health", (_req: Request, res: Response) => {
-    res.status(200).json("UP");
-})
-
-app.get("/health/db", async (_, res) => {
     try {
         const result = await database`select now()`;
         res.status(200).json("UP")
