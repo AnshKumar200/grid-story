@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express, { Request, Response } from "express";
+import express from "express";
 import http from "http";
-import { WebSocketServer, WebSocket, RawData } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import postgres from "postgres";
 import cors from "cors";
 
@@ -28,7 +28,7 @@ interface PixelWebSocket extends WebSocket {
 const app = express();
 app.use(cors());
 
-app.get("/health", (_req: Request, res: Response) => {
+app.get("/health", async (_req, res) => {
     try {
         const result = await database`select now()`;
         res.status(200).json("UP")
